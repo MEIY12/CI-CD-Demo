@@ -1,0 +1,51 @@
+name: Import migration to testing environment
+
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - main
+
+jobs:
+  get-migration-files:
+    runs-on: ubuntu-latest  # windows-latest | macos-latest
+    name: Get Migration Files
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+          node-version: '17'
+
+      - name: Get changed files in the migrations folder
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v35
+        with:
+          files: |
+            migrations/**
+
+      - name: Run step if any file(s) in the migrations folder change
+        id: run-migrations
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        # Create env name based on pull request title and number
+        # Create env
+        # Loop through changes migration files and execute migration 
+        # If a migration fails, delete created env
+        # If all migrations succeed, promote env to development alias
+        run: |
+          npm install --location=global contentful-cli
+          ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+          echo ${ENV}
+          contentful space environment create -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --n=${ENV} --src=master --mt=${{ secrets.CF_CMA_KEY }}
+          export IFS=" "
+          for file in ${{ steps.changed-files-specific.outputs.all_changed_files}}; do
+            echo "Processing Migration: $file"
+            contentful space migration -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --mt=${{ secrets.CF_CMA_KEY }} -y ./$file
+            if [ $? != 0 ]; then
+              echo "Migration Failed: environment will be deleted."
+              contentful space environment delete -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --mt=${{ secrets.CF_CMA_KEY }}
+              break
+            fi
+          done
+          contentful space environment-alias update -s=${{ secrets.CF_SPACE_ID }} -a=development --e=${ENV} --mt=${{ secrets.CF_CMA_KEY }}
