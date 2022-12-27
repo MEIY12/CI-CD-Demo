@@ -22,7 +22,7 @@ jobs:
         # Delete environment created for pull request
         run: |
           npm install --location=global contentful-cli
-          ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+          ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')  | cut -c-40
           echo ${ENV}
           contentful space environment-alias update -s=${{ secrets.CF_SPACE_ID }} -a=development --e=main --mt=${{ secrets.CF_CMA_KEY }}
           contentful space environment delete -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --mt=${{ secrets.CF_CMA_KEY }}
