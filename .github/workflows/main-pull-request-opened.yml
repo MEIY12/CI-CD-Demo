@@ -35,7 +35,7 @@ jobs:
         # If all migrations succeed, promote env to development alias
         run: |
           npm install --location=global contentful-cli
-          ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+          ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]') | cut -c-40
           echo ${ENV}
           contentful space environment create -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --n=${ENV} --src=master --mt=${{ secrets.CF_CMA_KEY }}
           export IFS=" "
