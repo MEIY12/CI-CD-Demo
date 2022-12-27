@@ -6,9 +6,9 @@ on:
       - main
 
 jobs:
-  get-migration-files:
+  apply-migration:
     runs-on: ubuntu-latest  # windows-latest | macos-latest
-    name: Get Migration Files
+    name: Apply migration to main environment
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
