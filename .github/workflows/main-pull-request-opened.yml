@@ -30,6 +30,8 @@ jobs:
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         # Create env name based on pull request title and number
         # Create env
+        # Use sleep to wait and ensure env is created before migration runs
+        # @TODO: Find a better way to manage this by checking whether the env exists
         # Loop through changes migration files and execute migration 
         # If a migration fails, delete created env
         # If all migrations succeed, promote env to development alias
@@ -38,6 +40,7 @@ jobs:
           ENV=$(echo "${{github.event.pull_request.title}}-${{github.event.pull_request.number}}" | sed -e 's/[][\\^*+.$()\/]/\-/g' | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | cut -c-40)
           echo ${ENV}
           contentful space environment create -s=${{ secrets.CF_SPACE_ID }} --e=${ENV} --n=${ENV} --src=master --mt=${{ secrets.CF_CMA_KEY }}
+          sleep 15
           export IFS=" "
           for file in ${{ steps.changed-files-specific.outputs.all_changed_files}}; do
             echo "Processing Migration: $file"
