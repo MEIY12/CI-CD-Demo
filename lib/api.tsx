@@ -54,18 +54,6 @@ export const getArticleBySlug = async (slug: string, preview: boolean) => {
           title
           body {
             json
-            links {
-              entries {
-                inline {
-                  sys {id}
-                  __typename
-                  ... on Microcopy {
-                    key
-                    value
-                  }
-                }
-              }
-            }
           }
         }
       }

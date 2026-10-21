@@ -2,27 +2,12 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { Inter } from '@next/font/google'
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
-import { INLINES } from '@contentful/rich-text-types';
 import { getArticleBySlug, getArticleSlugs } from '../../lib/api'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function StaticArticle({preview, content}: any) {
   const { title, body } = content
-  const options = {
-    renderNode: {
-      [INLINES.EMBEDDED_ENTRY]: (node: any) => {
-        const id = node.data.target.sys.id
-        const entry = body.links.entries.inline.find((item: any) => item.sys.id === id)
-        switch (entry.__typename) {
-          case 'Microcopy':
-            return <b>{entry.value}</b>
-            default: 
-          return null
-        }
-      }
-    }
-  };
   return (
     <>
       <Head>
@@ -33,7 +18,7 @@ export default function StaticArticle({preview, content}: any) {
       <main style={{maxWidth: '50em', margin: '0 auto'}}>
         <Link href='/'>&lsaquo; Back</Link>
         <h1>{title}</h1>
-        {documentToReactComponents(body.json, options)}
+        {documentToReactComponents(body.json)}
       </main>
     </>
   )
